@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k8s-loadtest-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: loadtester
+          image: your-dockerhub-username/k8s-loadtester:latest
+          imagePullPolicy: Always
+          args:
+            - "--url"
+            - "http://my-echo-service.default.svc.cluster.local:80"
+            - "--concurrency"
+            - "20"
+            - "--duration"
+            - "1m"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      restartPolicy: Never
+  backoffLimit: 4

@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: k8s-loadtest-cronjob
+spec:
+  # Schedule to run every hour at minute 0
+  schedule: "0 * * * *"
+  # Optional: Limit how long a job can run
+  # startingDeadlineSeconds: 600 # 10 minutes
+  # Optional: Prevent concurrent runs
+  concurrencyPolicy: Forbid
+  # How many successful/failed job histories to keep
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: loadtester
+              # IMPORTANT: Replace with your actual image path pushed to a registry
+              image: your-dockerhub-username/k8s-loadtester:latest
+              imagePullPolicy: Always
+              args:
+                - "--url"
+                # Replace with the actual service URL inside your cluster
+                - "http://my-echo-service.default.svc.cluster.local:80"
+                - "--concurrency"
+                - "10"
+                - "--duration"
+                - "30s"
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "500m"
+          restartPolicy: Never
+      # Optional: Set TTL for finished jobs created by the CronJob
+      # ttlSecondsAfterFinished: 86400 # Cleanup after 1 day
